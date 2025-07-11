@@ -1,77 +1,143 @@
-// Initialize ROT.js display
-const display = new ROT.Display({
-    width: 40,
-    height: 20,
-    layout: "term",
-    fontSize: 16,
-    fontFamily: "monospace",
-    fg: "#fff",
-    bg: "#000"
-});
-document.getElementById("game").appendChild(display.getContainer());
+// File: core.js
+(() => {
+  // ROT.js Display Setup
+  const display = new ROT.Display({ width: 40, height: 20, fontSize: 16, fg: '#ccc', bg: '#222' });
+  document.getElementById('game').appendChild(display.getContainer());
 
-// Game state
-let map = [];
-let player = { x: 5, y: 5, hp: 20, maxHp: 20, level: 1, xp: 0, inventory: [] };
+  // Game State
+  let map = {};
+  let items = [];
+  let enemies = [];
+  let scheduler, engine;
+  const player = { x: 0, y: 0, hp: 20, maxHp: 20, level: 1, xp: 0, inventory: [] };
 
-// Generate dungeon map
-function generateMap() {
-    map = [];
-    const digger = new ROT.Map.Digger(40, 20);
-    digger.create((x, y, value) => {
-        map.push({ x, y, value });
-        const char = value === 1 ? "#" : ".";
-        display.draw(x, y, char);
-    });
-}
-
-// Draw player
-function drawPlayer() {
-    display.draw(player.x, player.y, "@", "#ff0");
-}
-
-// Start game
-function startGame() {
+  // Initialize Game
+  window.initGame = function(resume) {
+    if (resume && loadState()) return;
     generateMap();
-    drawPlayer();
-}
+    placePlayer();
+    generateItems();
+    generateEnemies();
+    drawAll();
+    setupEngine();
+  };
 
-// Load game
-function loadGame() {
-    const savedData = JSON.parse(localStorage.getItem("gameData"));
-    if (savedData) {
-        player = savedData.player;
-        generateMap();
-        drawPlayer();
-    } else {
-        alert("No saved game found.");
+  // Map Generation
+  function generateMap() {
+    map = {};
+    const digger = new ROT.Map.Digger(40, 20);
+    digger.create((x, y, val) => { map[`${x},${y}`] = (val === 0); });
+  }
+
+  // Player Placement
+  function placePlayer() {
+    const free = Object.keys(map).filter(k => map[k]);
+    const [x, y] = free[Math.floor(Math.random() * free.length)].split(',').map(Number);
+    player.x = x; player.y = y;
+  }
+
+  // Item Generation
+  function generateItems(count = 5) {
+    items = [];
+    const types = ['Sword','Potion','Armor','Ring','Amulet'];
+    for (let i = 0; i < count; i++) {
+      const [x, y] = [rand(0,39), rand(0,19)];
+      const name = types[rand(0, types.length-1)];
+      const bonus = rand(1,5);
+      if (map[`${x},${y}`]) items.push({ x,y,name,bonus });
     }
-}
+  }
 
-// Save game
-function saveGame() {
-    const gameData = { player };
-    localStorage.setItem("gameData", JSON.stringify(gameData));
-}
+  // Enemy Generation
+  function generateEnemies(count = 5) {
+    enemies = [];
+    for (let i = 0; i < count; i++) {
+      const [x, y] = [rand(0,39), rand(0,19)];
+      if (map[`${x},${y}`]) enemies.push({ x,y,hp:5+rand(0,5),char:'g' });
+    }
+  }
 
-// Show options
-function showOptions() {
-    alert("Options menu is under construction.");
-}
+  // Drawing
+  function drawAll() {
+    display.clear();
+    for (const key in map) {
+      const [x,y] = key.split(',').map(Number);
+      display.draw(x,y, map[key] ? '.' : '#');
+    }
+    items.forEach(it => display.draw(it.x,it.y,'*','#0f0'));
+    enemies.forEach(e => display.draw(e.x,e.y,e.char,'#f00'));
+    display.draw(player.x,player.y,'@','#ff0');
+    document.getElementById('log').innerText =
+      `HP:${player.hp}/${player.maxHp} Lv:${player.level} XP:${player.xp}`;
+  }
 
-// Consent Management Platform (CMP)
-if (!localStorage.getItem("user-consent")) {
-    document.getElementById("cmp-banner").style.display = "block";
-}
+  // Game Engine
+  function setupEngine() {
+    scheduler = new ROT.Scheduler.Simple();
+    scheduler.add({ act: playerAct }, true);
+    enemies.forEach(e => scheduler.add({ act: () => enemyAct(e) }, true));
+    engine = new ROT.Engine(scheduler);
+    engine.start();
+  }
 
-document.getElementById("accept-consent").addEventListener("click", () => {
-    const analyticsConsent = document.getElementById("analytics-consent").checked;
-    const marketingConsent = document.getElementById("marketing-consent").checked;
-    localStorage.setItem("user-consent", JSON.stringify({ analytics: analyticsConsent, marketing: marketingConsent }));
-    document.getElementById("cmp-banner").style.display = "none";
-});
+  // Player Turn
+  function playerAct() {
+    window.addEventListener('keydown', onKey);
+    engine.lock();
+  }
+  function onKey(e) {
+    const keyMap = { ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0] };
+    if (!keyMap[e.key]) return;
+    movePlayer(...keyMap[e.key]);
+    window.removeEventListener('keydown',onKey);
+    engine.unlock();
+  }
 
-document.getElementById("decline-consent").addEventListener("click", () => {
-    localStorage.setItem("user-consent", JSON.stringify({ analytics: false, marketing: false }));
-    document.getElementById("cmp-banner").style.display = "none";
-});
+  // Player Move & Combat
+  function movePlayer(dx,dy) {
+    const nx = player.x+dx, ny = player.y+dy;
+    const enemy = enemies.find(e => e.x===nx && e.y===ny);
+    if (enemy) { attack(enemy); }
+    else if (map[`${nx},${ny}`]) { player.x=nx;player.y=ny; collectItem(); }
+    drawAll(); saveState();
+  }
+  function attack(enemy) {
+    enemy.hp -= rand(3,6);
+    if (enemy.hp<=0) {
+      player.xp+=5; enemies = enemies.filter(e=>e!==enemy); levelUp();
+    }
+  }
+
+  // Enemy AI
+  function enemyAct(e) {
+    const dx = Math.sign(player.x-e.x), dy = Math.sign(player.y-e.y);
+    const nx=e.x+dx, ny=e.y+dy;
+    if (nx===player.x&&ny===player.y) { player.hp -= rand(1,3); }
+    else if (map[`${nx},${ny}`] && !enemies.some(en=>en.x===nx&&en.y===ny)) {
+      e.x=nx; e.y=ny;
+    }
+    drawAll(); saveState();
+  }
+
+  // Items & Leveling
+  function collectItem() {
+    const idx = items.findIndex(it=>it.x===player.x&&it.y===player.y);
+    if (idx>=0) { player.xp+=items[idx].bonus; items.splice(idx,1); levelUp(); }
+  }
+  function levelUp() {
+    const need = player.level*10;
+    if (player.xp>=need) { player.xp-=need;player.level++;player.maxHp+=5;player.hp=player.maxHp; }
+  }
+
+  // Save/Load
+  function saveState() { localStorage.setItem('gameState',JSON.stringify({ player,map,items,enemies })); }
+  function loadState() {
+    const d=JSON.parse(localStorage.getItem('gameState')); if(!d) return false;
+    Object.assign(player,d.player); map=d.map; items=d.items; enemies=d.enemies;
+    drawAll(); setupEngine(); return true;
+  }
+
+  // Utils
+  function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+})();
