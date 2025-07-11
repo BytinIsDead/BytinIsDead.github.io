@@ -1,23 +1,24 @@
-// Expanded ASCII Roguelike (all features in one file for simplicity)
+// Constants
+const WIDTH = 40;
+const HEIGHT = 20;
+const PLAYER = { x: 5, y: 5, hp: 20, maxHp: 20, level: 1, xp: 0, inventory: [] };
 
-const width = 40;
-const height = 20;
+// Game State
 let map = [];
-let player = { x: 5, y: 5, hp: 20, maxHp: 20, level: 1, xp: 0, inventory: [] };
 let items = [];
 let enemies = [];
 let logEl = document.getElementById("log");
 
-// Generate rooms and corridors using simple random walk + rooms
+// Generate Map with Rooms and Corridors
 function generateMap() {
-    map = Array.from({ length: height }, () => Array(width).fill('#'));
+    map = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill('#'));
 
-    // Carve out random rooms
+    // Create Rooms
     for (let i = 0; i < 8; i++) {
         const rw = Math.floor(Math.random() * 6) + 4;
         const rh = Math.floor(Math.random() * 4) + 3;
-        const rx = Math.floor(Math.random() * (width - rw - 2)) + 1;
-        const ry = Math.floor(Math.random() * (height - rh - 2)) + 1;
+        const rx = Math.floor(Math.random() * (WIDTH - rw - 2)) + 1;
+        const ry = Math.floor(Math.random() * (HEIGHT - rh - 2)) + 1;
 
         for (let y = ry; y < ry + rh; y++) {
             for (let x = rx; x < rx + rw; x++) {
@@ -25,16 +26,40 @@ function generateMap() {
             }
         }
     }
+
+    // Create Corridors (Random Walk)
+    let lastX = Math.floor(Math.random() * WIDTH);
+    let lastY = Math.floor(Math.random() * HEIGHT);
+    for (let i = 0; i < 10; i++) {
+        const length = Math.floor(Math.random() * 10) + 5;
+        const direction = Math.floor(Math.random() * 4);
+        let dx = 0, dy = 0;
+
+        switch (direction) {
+            case 0: dx = 1; break; // Right
+            case 1: dx = -1; break; // Left
+            case 2: dy = 1; break; // Down
+            case 3: dy = -1; break; // Up
+        }
+
+        for (let j = 0; j < length; j++) {
+            lastX += dx;
+            lastY += dy;
+            if (lastX >= 0 && lastX < WIDTH && lastY >= 0 && lastY < HEIGHT) {
+                map[lastY][lastX] = '.';
+            }
+        }
+    }
 }
 
-// Generate random items
+// Generate Items
 function generateItems(count = 5) {
     items = [];
     const types = ["Sword", "Potion", "Armor", "Ring", "Amulet"];
     for (let i = 0; i < count; i++) {
         let item = {
-            x: rand(1, width - 2),
-            y: rand(1, height - 2),
+            x: rand(1, WIDTH - 2),
+            y: rand(1, HEIGHT - 2),
             name: types[rand(0, types.length - 1)],
             bonus: rand(1, 5)
         };
@@ -42,13 +67,13 @@ function generateItems(count = 5) {
     }
 }
 
-// Generate enemies
+// Generate Enemies
 function generateEnemies(count = 5) {
     enemies = [];
     for (let i = 0; i < count; i++) {
         let enemy = {
-            x: rand(1, width - 2),
-            y: rand(1, height - 2),
+            x: rand(1, WIDTH - 2),
+            y: rand(1, HEIGHT - 2),
             hp: 5 + rand(0, 5),
             char: "g"
         };
@@ -56,12 +81,12 @@ function generateEnemies(count = 5) {
     }
 }
 
-// Drawing function
+// Draw Game State
 function draw() {
     let output = "";
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            if (x === player.x && y === player.y) output += "@";
+    for (let y = 0; y < HEIGHT; y++) {
+        for (let x = 0; x < WIDTH; x++) {
+            if (x === PLAYER.x && y === PLAYER.y) output += "@";
             else if (enemies.some(e => e.x === x && e.y === y)) output += "g";
             else if (items.some(it => it.x === x && it.y === y)) output += "*";
             else output += map[y][x];
@@ -69,58 +94,58 @@ function draw() {
         output += "\n";
     }
     document.getElementById("game").innerText = output;
-    log(`HP: ${player.hp}/${player.maxHp}  Level: ${player.level} XP: ${player.xp}`);
+    log(`HP: ${PLAYER.hp}/${PLAYER.maxHp}  Level: ${PLAYER.level} XP: ${PLAYER.xp}`);
 }
 
-// Combat
+// Attack Enemy
 function attackEnemy(ex, ey) {
     const enemy = enemies.find(e => e.x === ex && e.y === ey);
     if (!enemy) return;
     enemy.hp -= rand(3, 6);
     log("You hit the enemy!");
     if (enemy.hp <= 0) {
-        player.xp += 5;
+        PLAYER.xp += 5;
         enemies = enemies.filter(e => e !== enemy);
         log("Enemy defeated! Gained 5 XP.");
         checkLevelUp();
     }
 }
 
-// Level up logic
+// Level Up Logic
 function checkLevelUp() {
-    let nextXp = player.level * 10;
-    if (player.xp >= nextXp) {
-        player.xp -= nextXp;
-        player.level++;
-        player.maxHp += 5;
-        player.hp = player.maxHp;
-        log(`Leveled up! Now level ${player.level}. HP restored.`);
+    let nextXp = PLAYER.level * 10;
+    if (PLAYER.xp >= nextXp) {
+        PLAYER.xp -= nextXp;
+        PLAYER.level++;
+        PLAYER.maxHp += 5;
+        PLAYER.hp = PLAYER.maxHp;
+        log(`Leveled up! Now level ${PLAYER.level}. HP restored.`);
     }
 }
 
-// Item pickup and inventory
+// Item Pickup
 function checkItem() {
-    let idx = items.findIndex(it => it.x === player.x && it.y === player.y);
+    let idx = items.findIndex(it => it.x === PLAYER.x && it.y === PLAYER.y);
     if (idx !== -1) {
         const item = items[idx];
-        player.inventory.push(item);
+        PLAYER.inventory.push(item);
         log(`Picked up ${item.name} (+${item.bonus}).`);
         items.splice(idx, 1);
     }
 }
 
-// Simple AI: enemies move toward the player
+// Enemy AI
 function moveEnemies() {
     for (let e of enemies) {
-        const dx = Math.sign(player.x - e.x);
-        const dy = Math.sign(player.y - e.y);
+        const dx = Math.sign(PLAYER.x - e.x);
+        const dy = Math.sign(PLAYER.y - e.y);
         const tx = e.x + dx;
         const ty = e.y + dy;
 
-        if (tx === player.x && ty === player.y) {
-            player.hp -= rand(1, 3);
+        if (tx === PLAYER.x && ty === PLAYER.y) {
+            PLAYER.hp -= rand(1, 3);
             log("You were hit by an enemy!");
-            if (player.hp <= 0) {
+            if (PLAYER.hp <= 0) {
                 log("You died. Game Over.");
                 document.removeEventListener("keydown", keyHandler);
             }
@@ -134,16 +159,16 @@ function moveEnemies() {
     }
 }
 
-// Player movement & attack
+// Player Movement
 function move(dx, dy) {
-    const nx = player.x + dx;
-    const ny = player.y + dy;
+    const nx = PLAYER.x + dx;
+    const ny = PLAYER.y + dy;
 
     if (enemies.some(e => e.x === nx && e.y === ny)) {
         attackEnemy(nx, ny);
     } else if (map[ny]?.[nx] === '.') {
-        player.x = nx;
-        player.y = ny;
+        PLAYER.x = nx;
+        PLAYER.y = ny;
         checkItem();
     }
 
@@ -151,6 +176,7 @@ function move(dx, dy) {
     draw();
 }
 
+// Key Handler
 function keyHandler(e) {
     switch (e.key) {
         case "ArrowUp": move(0, -1); break;
@@ -160,32 +186,35 @@ function keyHandler(e) {
     }
 }
 
+// Random Number Generator
 function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// Log Messages
 function log(msg) {
     logEl.innerText = msg;
 }
 
-// Save/load functions
+// Save Game
 function saveGame() {
-    localStorage.setItem("roguelikeSave", JSON.stringify({ map, player, items, enemies }));
+    localStorage.setItem("roguelikeSave", JSON.stringify({ map, PLAYER, items, enemies }));
     log("Game saved.");
 }
 
+// Load Game
 function loadGame() {
     const data = JSON.parse(localStorage.getItem("roguelikeSave"));
     if (!data) return;
     map = data.map;
-    player = data.player;
+    PLAYER = data.PLAYER;
     items = data.items;
     enemies = data.enemies;
     draw();
     log("Game loaded.");
 }
 
-// Initialize game
+// Start Game
 function startGame() {
     generateMap();
     generateItems();
@@ -193,7 +222,9 @@ function startGame() {
     draw();
 }
 
+// Event Listeners
 document.addEventListener("keydown", keyHandler);
 window.addEventListener("beforeunload", saveGame);
 
+// Initialize
 startGame();
