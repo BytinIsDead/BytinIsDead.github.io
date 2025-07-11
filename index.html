@@ -13,8 +13,9 @@
     #main-menu ul { list-style: none; padding: 0; margin: 0; }
     #main-menu li { margin: 10px 0; cursor: pointer; font-size: 18px; }
     #main-menu li:hover { color: #fff; }
-    #game { position: absolute; top: 0; left: 0; }
-    #log { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: #8f8; }
+    #game, #log { display: none; position: absolute; left: 50%; transform: translateX(-50%); }
+    #game { top: 100px; }
+    #log { bottom: 10px; }
   </style>
 </head>
 <body>
@@ -56,11 +57,17 @@
   <!-- Core Script -->
   <script src="core.js"></script>
   <script>
+    // Utility to show game
+    function showGame() {
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('game').style.display = 'block';
+      document.getElementById('log').style.display = 'block';
+    }
+
     // Menu handlers
-    document.getElementById('start').onclick = () => { initGame(false); hideMenu(); };
-    document.getElementById('continue').onclick = () => { initGame(true); hideMenu(); };
+    document.getElementById('start').onclick = () => { initGame(false); showGame(); };
+    document.getElementById('continue').onclick = () => { initGame(true); showGame(); };
     document.getElementById('options').onclick = () => { alert('Options coming soon'); };
-    function hideMenu() { document.getElementById('main-menu').style.display = 'none'; }
 
     // CMP
     if (!localStorage.getItem('user-consent')) document.getElementById('cmp-banner').style.display = 'block';
