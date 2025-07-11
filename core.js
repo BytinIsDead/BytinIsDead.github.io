@@ -1,4 +1,3 @@
-// File: core.js
 (() => {
   // ROT.js Display Setup
   const display = new ROT.Display({ width: 40, height: 20, fontSize: 16, fg: '#ccc', bg: '#222' });
@@ -117,27 +116,3 @@
       e.x=nx; e.y=ny;
     }
     drawAll(); saveState();
-  }
-
-  // Items & Leveling
-  function collectItem() {
-    const idx = items.findIndex(it=>it.x===player.x&&it.y===player.y);
-    if (idx>=0) { player.xp+=items[idx].bonus; items.splice(idx,1); levelUp(); }
-  }
-  function levelUp() {
-    const need = player.level*10;
-    if (player.xp>=need) { player.xp-=need;player.level++;player.maxHp+=5;player.hp=player.maxHp; }
-  }
-
-  // Save/Load
-  function saveState() { localStorage.setItem('gameState',JSON.stringify({ player,map,items,enemies })); }
-  function loadState() {
-    const d=JSON.parse(localStorage.getItem('gameState')); if(!d) return false;
-    Object.assign(player,d.player); map=d.map; items=d.items; enemies=d.enemies;
-    drawAll(); setupEngine(); return true;
-  }
-
-  // Utils
-  function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
-
-})();
