@@ -1,34 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core.js Roguelike</title>
-    <style>
-        body { font-family: monospace; background: #222; color: white; margin: 0; padding: 0; }
-        #game { margin: 10px; }
-        #cmp-banner { position: fixed; bottom: 0; left: 0; width: 100%; background: #333; color: white; padding: 10px; text-align: center; display: none; }
-        #main-menu { display: flex; justify-content: center; margin-top: 20px; }
-        #main-menu button { margin: 0 10px; padding: 10px 20px; background: #444; color: white; border: none; cursor: pointer; }
-        #main-menu button:hover { background: #666; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Core.js Roguelike</title>
+  <style>
+    body { font-family: monospace; background: #222; color: #ccc; margin: 0; padding: 0; overflow: hidden; }
+    #banner { text-align: center; margin: 5px auto; }
+    #cmp-banner { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.85); color: #fff; padding: 10px; display: none; }
+    #main-menu { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 20px; border: 2px solid #444; }
+    #main-menu h1 { margin: 0 0 10px; font-size: 24px; }
+    #main-menu ul { list-style: none; padding: 0; margin: 0; }
+    #main-menu li { margin: 10px 0; cursor: pointer; font-size: 18px; }
+    #main-menu li:hover { color: #fff; }
+    #game { position: absolute; top: 0; left: 0; }
+    #log { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: #8f8; }
+  </style>
 </head>
 <body>
-    <h1 style="text-align: center;">Core.js Roguelike</h1>
-    <div id="cmp-banner">
-        <p>We use cookies to enhance your gaming experience. Please select your preferences:</p>
-        <label><input type="checkbox" id="analytics-consent"> Allow analytics cookies</label><br>
-        <label><input type="checkbox" id="marketing-consent"> Allow marketing cookies</label><br>
-        <button id="accept-consent">Accept</button>
-        <button id="decline-consent">Decline</button>
-    </div>
-    <div id="game"></div>
-    <div id="main-menu">
-        <button onclick="startGame()">Start</button>
-        <button onclick="loadGame()">Continue</button>
-        <button onclick="showOptions()">Options</button>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/rot-js@2/dist/rot.js"></script>
-    <script src="core.js"></script>
+  <!-- Banner Ad -->
+  <div id="banner">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <ins class="adsbygoogle"
+         style="display:inline-block;width:728px;height:90px"
+         data-ad-client="ca-pub-2166144609931353"
+         data-ad-slot="1234567890"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- Consent Banner -->
+  <div id="cmp-banner">
+    <p>We use cookies to enhance your experience. Please select:</p>
+    <label><input type="checkbox" id="analytics-consent"> Analytics</label>
+    <label><input type="checkbox" id="marketing-consent"> Marketing</label>
+    <button id="accept-consent">Accept</button>
+    <button id="decline-consent">Decline</button>
+  </div>
+
+  <!-- Main Menu -->
+  <div id="main-menu">
+    <h1>Core.js Roguelike</h1>
+    <ul>
+      <li id="start">Start New Game</li>
+      <li id="continue">Continue</li>
+      <li id="options">Options</li>
+    </ul>
+  </div>
+
+  <!-- Game Area -->
+  <div id="game"></div>
+  <div id="log"></div>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/rot-js@2/dist/rot.js"></script>
+  <!-- Core Script -->
+  <script src="core.js"></script>
+  <script>
+    // Menu handlers
+    document.getElementById('start').onclick = () => { initGame(false); hideMenu(); };
+    document.getElementById('continue').onclick = () => { initGame(true); hideMenu(); };
+    document.getElementById('options').onclick = () => { alert('Options coming soon'); };
+    function hideMenu() { document.getElementById('main-menu').style.display = 'none'; }
+
+    // CMP
+    if (!localStorage.getItem('user-consent')) document.getElementById('cmp-banner').style.display = 'block';
+    document.getElementById('accept-consent').onclick = () => saveConsent(true, true);
+    document.getElementById('decline-consent').onclick = () => saveConsent(false, false);
+    function saveConsent(analytics, marketing) {
+      localStorage.setItem('user-consent', JSON.stringify({ analytics, marketing }));
+      document.getElementById('cmp-banner').style.display = 'none';
+    }
+  </script>
 </body>
 </html>
