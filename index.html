@@ -1,59 +1,114 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6589496347864618"
-     crossorigin="anonymous"></script>
-    <meta charset="UTF-8">
-    <title>Core.js Roguelike</title>
-    <style>
-        body {
-            background: #111;
-            color: #ccc;
-            font-family: monospace;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        #banner {
-            margin-top: 5px;
-            margin-bottom: 10px;
-        }
-        #game {
-            white-space: pre;
-            font-size: 14px;
-            line-height: 14px;
-            margin-top: 10px;
-        }
-        #log {
-            margin-top: 5px;
-            color: #8f8;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Core.js Roguelike</title>
+  <style>
+    body {
+      background: #111;
+      color: #ccc;
+      font-family: monospace;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    #banner {
+      margin: 5px auto;
+      text-align: center;
+    }
+    #game, #log {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    #game {
+      top: 100px;
+      white-space: pre;
+      font-size: 14px;
+      line-height: 14px;
+    }
+    #log {
+      top: calc(100px + 14 * 20px + 10px);
+      color: #8f8;
+    }
+    #menu {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.85);
+      padding: 20px;
+      border: 2px solid #444;
+    }
+    #menu h1 {
+      margin: 0 0 10px;
+      font-size: 24px;
+    }
+    #menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #menu li {
+      margin: 10px 0;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    #menu li:hover {
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
 
-<!-- 🔸 Bannière publicitaire -->
-<div id="banner">
-    <!-- 🔻 Remplace ceci par ton propre bloc AdSense -->
+  <!-- Banner Ad -->
+  <div id="banner">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
     <ins class="adsbygoogle"
          style="display:inline-block;width:728px;height:90px"
          data-ad-client="ca-pub-2166144609931353"
          data-ad-slot="1234567890"></ins>
-    <script>
-         (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-    <!-- 🔺 Fin du code AdSense -->
-</div>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
 
-<!-- 🔸 Zone du jeu ASCII -->
-<pre id="game"></pre>
+  <!-- Main Menu -->
+  <div id="menu">
+    <h1>Core.js Roguelike</h1>
+    <ul>
+      <li id="start">Start New Game</li>
+      <li id="continue">Continue from Save</li>
+      <li id="options">Options</li>
+    </ul>
+  </div>
 
-<!-- 🔸 Zone de log -->
-<div id="log"></div>
+  <!-- Game and Log -->
+  <pre id="game" style="display:none;"></pre>
+  <div id="log"></div>
 
-<!-- 🔸 Script du jeu -->
-<script src="core.js"></script>
+  <!-- Game Logic -->
+  <script src="core.js"></script>
+  <script>
+    document.getElementById('start').onclick = () => {
+      localStorage.removeItem('roguelikeSave');
+      initGame();
+      showGame();
+    };
+    document.getElementById('continue').onclick = () => {
+      initGame(true);
+      showGame();
+    };
+    document.getElementById('options').onclick = () => {
+      alert('Options coming soon!');
+    };
+
+    function showGame(){
+      document.getElementById('menu').style.display = 'none';
+      document.getElementById('game').style.display = 'block';
+    }
+
+    // Define initGame in core.js to accept resume flag
+    // e.g., function initGame(resume = false) { ... }
+  </script>
 
 </body>
 </html>
