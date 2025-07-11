@@ -1,114 +1,34 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Core.js Roguelike</title>
-  <style>
-    body {
-      background: #111;
-      color: #ccc;
-      font-family: monospace;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    #banner {
-      margin: 5px auto;
-      text-align: center;
-    }
-    #game, #log {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    #game {
-      top: 100px;
-      white-space: pre;
-      font-size: 14px;
-      line-height: 14px;
-    }
-    #log {
-      top: calc(100px + 14 * 20px + 10px);
-      color: #8f8;
-    }
-    #menu {
-      position: absolute;
-      top: 30%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.85);
-      padding: 20px;
-      border: 2px solid #444;
-    }
-    #menu h1 {
-      margin: 0 0 10px;
-      font-size: 24px;
-    }
-    #menu ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    #menu li {
-      margin: 10px 0;
-      cursor: pointer;
-      font-size: 18px;
-    }
-    #menu li:hover {
-      color: #fff;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core.js Roguelike</title>
+    <style>
+        body { font-family: monospace; background: #222; color: white; margin: 0; padding: 0; }
+        #game { margin: 10px; }
+        #cmp-banner { position: fixed; bottom: 0; left: 0; width: 100%; background: #333; color: white; padding: 10px; text-align: center; display: none; }
+        #main-menu { display: flex; justify-content: center; margin-top: 20px; }
+        #main-menu button { margin: 0 10px; padding: 10px 20px; background: #444; color: white; border: none; cursor: pointer; }
+        #main-menu button:hover { background: #666; }
+    </style>
 </head>
 <body>
-
-  <!-- Banner Ad -->
-  <div id="banner">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    <ins class="adsbygoogle"
-         style="display:inline-block;width:728px;height:90px"
-         data-ad-client="ca-pub-2166144609931353"
-         data-ad-slot="1234567890"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </div>
-
-  <!-- Main Menu -->
-  <div id="menu">
-    <h1>Core.js Roguelike</h1>
-    <ul>
-      <li id="start">Start New Game</li>
-      <li id="continue">Continue from Save</li>
-      <li id="options">Options</li>
-    </ul>
-  </div>
-
-  <!-- Game and Log -->
-  <pre id="game" style="display:none;"></pre>
-  <div id="log"></div>
-
-  <!-- Game Logic -->
-  <script src="core.js"></script>
-  <script>
-    document.getElementById('start').onclick = () => {
-      localStorage.removeItem('roguelikeSave');
-      initGame();
-      showGame();
-    };
-    document.getElementById('continue').onclick = () => {
-      initGame(true);
-      showGame();
-    };
-    document.getElementById('options').onclick = () => {
-      alert('Options coming soon!');
-    };
-
-    function showGame(){
-      document.getElementById('menu').style.display = 'none';
-      document.getElementById('game').style.display = 'block';
-    }
-
-    // Define initGame in core.js to accept resume flag
-    // e.g., function initGame(resume = false) { ... }
-  </script>
-
+    <h1 style="text-align: center;">Core.js Roguelike</h1>
+    <div id="cmp-banner">
+        <p>We use cookies to enhance your gaming experience. Please select your preferences:</p>
+        <label><input type="checkbox" id="analytics-consent"> Allow analytics cookies</label><br>
+        <label><input type="checkbox" id="marketing-consent"> Allow marketing cookies</label><br>
+        <button id="accept-consent">Accept</button>
+        <button id="decline-consent">Decline</button>
+    </div>
+    <div id="game"></div>
+    <div id="main-menu">
+        <button onclick="startGame()">Start</button>
+        <button onclick="loadGame()">Continue</button>
+        <button onclick="showOptions()">Options</button>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/rot-js@2/dist/rot.js"></script>
+    <script src="core.js"></script>
 </body>
 </html>
