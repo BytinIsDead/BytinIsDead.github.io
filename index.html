@@ -5,28 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Core.js Roguelike (NetHack-like)</title>
   <style>
-    body { font-family: monospace; background: #000; color: #ccc; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #000; color: #ccc; margin: 0; padding: 0; overflow: hidden; }
     #banner { text-align: center; margin: 5px; }
     #cmp-banner { position: fixed; bottom: 0; width: 100%; background: #222; color: #fff; padding: 10px; display: none; }
     #main-menu, #options-menu { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); background: #111; padding: 20px; border: 2px solid #444; text-align: center; }
     #main-menu button, #options-menu button { display: block; width: 200px; margin: 10px auto; padding: 8px; background: #333; border: none; color: #ccc; cursor: pointer; }
     #main-menu button:hover, #options-menu button:hover { background: #555; }
-    #game, #log, #inv { position: absolute; left: 50%; transform: translateX(-50%); }
+    #game, #log, #inv { position: absolute; left: 50%; transform: translateX(-50%); display: none; }
     #game { top: 60px; }
     #log { bottom: 10px; }
     #inv { top: 10px; right: 10px; left: auto; transform: none; width: 200px; background: #111; padding: 5px; border: 1px solid #444; display: none; }
   </style>
 </head>
 <body>
-  <!-- Ad Banner -->
-  <div id="banner">
+  <div id="banner"> <!-- Ad Banner -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
     <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-2166144609931353" data-ad-slot="1234567890"></ins>
     <script>(adsbygoogle = window.adsbygoogle||[]).push({});</script>
   </div>
 
-  <!-- Consent Banner -->
-  <div id="cmp-banner">
+  <div id="cmp-banner"> <!-- Consent Banner -->
     <p>We use cookies. Select:</p>
     <label><input type="checkbox" id="analytics-consent"> Analytics</label>
     <label><input type="checkbox" id="marketing-consent"> Marketing</label>
@@ -34,34 +32,31 @@
     <button id="decline-consent">Decline</button>
   </div>
 
-  <!-- Main Menu -->
-  <div id="main-menu">
+  <div id="main-menu"> <!-- Main Menu -->
     <h1>Core.js Roguelike</h1>
     <button id="start-btn">Start New Game</button>
     <button id="continue-btn">Continue</button>
     <button id="options-btn">Options</button>
   </div>
 
-  <!-- Options Menu -->
-  <div id="options-menu" style="display:none;">
+  <div id="options-menu"> <!-- Options Menu -->
     <h2>Options</h2>
     <p>Keybindings:</p>
-    <ul style="text-align:left;">  
-      <li>Arrows/WASD: move</li>
-      <li>> : descend stairs</li>
-      <li>i : inventory toggle</li>
-      <li>o : open door</li>
+    <ul style="text-align:left;">
+      <li>Arrows/WASD: Move</li>
+      <li>> : Descend stairs</li>
+      <li>i : Inventory toggle</li>
+      <li>o : Open door</li>
     </ul>
     <button id="back-btn">Back</button>
   </div>
 
-  <!-- Game Display -->
-  <div id="game"></div>
+  <div id="game"></div> <!-- Game Display -->
   <div id="log"></div>
   <div id="inv"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/rot-js@2/dist/rot.js"></script>
-  <script src="core.js"></script>
+  <script defer src="core.js"></script> <!-- Defer ensures DOM ready -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const startBtn = document.getElementById('start-btn');
@@ -94,7 +89,6 @@
       optionsBtn.onclick = showOptions;
       backBtn.onclick = showMenu;
 
-      // CMP
       if (!localStorage.getItem('user-consent')) {
         document.getElementById('cmp-banner').style.display = 'block';
       }
